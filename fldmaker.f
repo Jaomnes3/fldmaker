@@ -2,15 +2,19 @@ c    writefld.fld ... プロットデータに対応するfldを作成するプ�
       program DEMFBfld
       implicit none
 c    
-      integer ndim, dim1, nspace, veclen, dec, body, I
+      integer ndim, dim1, nspace, veclen, dec, body, I,
+     &  skip, offset, stride
 c
-      real*8 unit, time, times, var
+      real*8 unit, time, times, var, title(20000)
+
+      skip = 1
+      stride = 4
 c    
       write(*,*)'Time?(in [seconds])'
       read(*,*)time
       write(*,*)'Time step?(in [seconds])'
       read(*,*)times
-c
+c     
 c           
       open(unit = 3,err = 6060,status = 'old',file = 'colorplot')
       close(unit = 3, status = 'delete' )
@@ -47,8 +51,16 @@ c
       write(3,*)'# Coordinate value of (X, Y, Z)'
 c      
       do unit = 0.000, time, times
-            write(3,1001)unit
-            write(*,1001)unit
+            offset = 0
+            write(3,1002)unit, skip, offset, stride 
+            do offset = 1, 3, 1
+                  write(3,1003)offset, unit, skip, offset, stride
+             end do
+            write(3,*)'EOT'
+            write(3,*)' '
+
+c            write(3,1001)unit
+c            write(*,1001)unit
 c            write(3,*)'variable 1  file="',unit,'pc.dat',
 c     &              ' filetype=ascii skip=1 offset=0 stride=4'
 c            write(3,*)' '
@@ -61,7 +73,13 @@ c
 9000  open(unit = 22,err = 9060,status = 'old',file = 'fort22')
       close(unit = 22, status = 'delete' )
 9060  open(unit = 22,status = 'new',file = 'fort22')
-      write(22,*) 'open error file.dat (unit=1)'
+      write(22,*) 'open error file.dat (unit=2)'
+c       
 c 
-1001  format( 'unit = ', 1e9.3 )
+1001  format(1e9.3 )
+1002  format('variable 1  file="',1e9.3,'pc.dat"  filetype=ascii',
+     &'  skip=',1(1X,i0),'  offset=',1(1X,i0),'  stride=',1(1X,i0))
+1003  format('coord   ',1(1X,i0),'  file="',1e9.3,'pc.dat"',
+     & '  filetype=ascii  skip=',1(1X,i0),'  offset=',1(1X,i0),
+     &'  stride=',1(1X,i0))
       end
